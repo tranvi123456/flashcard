@@ -46,4 +46,4 @@ else:
 # Button to load a new flashcard
 if st.button("Next Flashcard"):
     new_flashcard()
-    st.experimental_rerun()
+    st.rerun()
