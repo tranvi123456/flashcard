@@ -6,14 +6,12 @@ import openpyxl  # Ensure this library is installed for writing to Excel
 # Load flashcards data from the Excel file
 file_path = 'new_word.xlsx'
 flashcards_df = pd.read_excel(file_path)
-flashcards = flashcards_df.to_dict(orient='records')
-
+flashcards = flashcards_df.to_dict(orient='records')  # Convert the DataFrame to a list of dictionaries
 
 # Function to pick a new random flashcard
 def new_flashcard():
     if flashcards:  # Ensure flashcards list is not empty
         st.session_state.current_flashcard = random.choice(flashcards)
-
 
 # Function to add a new flashcard
 def add_new_flashcard(word, pronounce, kind, meaning, collocation, synonym, example):
@@ -26,23 +24,21 @@ def add_new_flashcard(word, pronounce, kind, meaning, collocation, synonym, exam
         'Synonym': synonym,
         'Example': example
     }
+    # Append the new flashcard to the current list and update DataFrame
     flashcards.append(new_entry)  # Add to flashcards list
-    # Append the new word to the DataFrame
-    new_flashcard_df = pd.DataFrame([new_entry])
-    global flashcards_df  # Access the global variable
-    flashcards_df = pd.concat([flashcards_df, new_flashcard_df], ignore_index=True)
+    new_flashcard_df = pd.DataFrame([new_entry])  # Create a new DataFrame for the new entry
+    global flashcards_df  # Access the global flashcards DataFrame
+    flashcards_df = pd.concat([flashcards_df, new_flashcard_df], ignore_index=True)  # Add to the existing DataFrame
+    
     # Save the updated DataFrame back to the Excel file
-    flashcards_df.to_excel(file_path, index=False)
-
+    flashcards_df.to_excel(file_path, index=False, engine='openpyxl')
 
 # Initialize session state to store the flashcard
 if 'current_flashcard' not in st.session_state:
     new_flashcard()  # Set a flashcard at the start
 
-
 # Streamlit app title
-st.title(" ")
-
+st.title("Flashcard App")
 
 # Get the current flashcard from session state
 if 'current_flashcard' in st.session_state:
@@ -62,12 +58,10 @@ if 'current_flashcard' in st.session_state:
 else:
     st.write("No flashcard available.")
 
-
 # Button to load a new flashcard
 if st.button("Next Flashcard"):
     new_flashcard()
-    st.rerun()
-
+    st.experimental_rerun()
 
 # Add a form to input new flashcard data
 st.subheader("Add a New Flashcard")
