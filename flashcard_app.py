@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import random
-
+import openpyxl  # Ensure this library is installed for writing to Excel
 
 # Load flashcards data from the Excel file
 file_path = 'new_word.xlsx'
@@ -13,6 +13,26 @@ flashcards = flashcards_df.to_dict(orient='records')
 def new_flashcard():
     if flashcards:  # Ensure flashcards list is not empty
         st.session_state.current_flashcard = random.choice(flashcards)
+
+
+# Function to add a new flashcard
+def add_new_flashcard(word, pronounce, kind, meaning, collocation, synonym, example):
+    new_entry = {
+        'Word': word,
+        'Pronounce': pronounce,
+        'Kind of word': kind,
+        'Meaning': meaning,
+        'common collocation': collocation,
+        'Synonym': synonym,
+        'Example': example
+    }
+    flashcards.append(new_entry)  # Add to flashcards list
+    # Append the new word to the DataFrame
+    new_flashcard_df = pd.DataFrame([new_entry])
+    global flashcards_df  # Access the global variable
+    flashcards_df = pd.concat([flashcards_df, new_flashcard_df], ignore_index=True)
+    # Save the updated DataFrame back to the Excel file
+    flashcards_df.to_excel(file_path, index=False)
 
 
 # Initialize session state to store the flashcard
@@ -47,3 +67,27 @@ else:
 if st.button("Next Flashcard"):
     new_flashcard()
     st.rerun()
+
+
+# Add a form to input new flashcard data
+st.subheader("Add a New Flashcard")
+with st.form("new_flashcard_form"):
+    new_word = st.text_input("Word")
+    new_pronounce = st.text_input("Pronunciation")
+    new_kind = st.text_input("Kind of Word")
+    new_meaning = st.text_area("Meaning")
+    new_collocation = st.text_area("Common Collocation")
+    new_synonym = st.text_area("Synonym")
+    new_example = st.text_area("Example")
+    
+    # Submit button
+    submitted = st.form_submit_button("Add Flashcard")
+    
+    # If the form is submitted, add the new flashcard
+    if submitted:
+        if new_word and new_meaning:  # Ensure word and meaning are provided
+            add_new_flashcard(new_word, new_pronounce, new_kind, new_meaning, new_collocation, new_synonym, new_example)
+            st.success(f"Flashcard for '{new_word}' added!")
+        else:
+            st.error("Please provide at least the word and meaning.")
+
