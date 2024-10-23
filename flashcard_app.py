@@ -1,12 +1,20 @@
 import streamlit as st
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import random
-import openpyxl  # Ensure this library is installed for writing to Excel
 
-# Load flashcards data from the Excel file
-file_path = 'new_word.xlsx'
-flashcards_df = pd.read_excel(file_path)
-flashcards = flashcards_df.to_dict(orient='records')  # Convert the DataFrame to a list of dictionaries
+# Google Sheets credentials setup
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name('your-credentials-file.json', scope)  # Replace with your JSON file
+client = gspread.authorize(creds)
+
+# Open the Google Sheet
+sheet = client.open(new_word).sheet1  # Replace with your Google Sheet name
+
+# Load flashcards data from the Google Sheet
+flashcards_df = pd.DataFrame(sheet.get_all_records())
+flashcards = flashcards_df.to_dict(orient='records')
 
 # Function to pick a new random flashcard
 def new_flashcard():
@@ -15,23 +23,9 @@ def new_flashcard():
 
 # Function to add a new flashcard
 def add_new_flashcard(word, pronounce, kind, meaning, collocation, synonym, example):
-    new_entry = {
-        'Word': word,
-        'Pronounce': pronounce,
-        'Kind of word': kind,
-        'Meaning': meaning,
-        'common collocation': collocation,
-        'Synonym': synonym,
-        'Example': example
-    }
-    # Append the new flashcard to the current list and update DataFrame
-    flashcards.append(new_entry)  # Add to flashcards list
-    new_flashcard_df = pd.DataFrame([new_entry])  # Create a new DataFrame for the new entry
-    global flashcards_df  # Access the global flashcards DataFrame
-    flashcards_df = pd.concat([flashcards_df, new_flashcard_df], ignore_index=True)  # Add to the existing DataFrame
-    
-    # Save the updated DataFrame back to the Excel file
-    flashcards_df.to_excel(file_path, index=False, engine='openpyxl')
+    new_entry = [word, pronounce, kind, meaning, collocation, synonym, example]
+    # Append the new flashcard to Google Sheets
+    sheet.append_row(new_entry)
 
 # Initialize session state to store the flashcard
 if 'current_flashcard' not in st.session_state:
@@ -84,4 +78,5 @@ with st.form("new_flashcard_form"):
             st.success(f"Flashcard for '{new_word}' added!")
         else:
             st.error("Please provide at least the word and meaning.")
+
 
