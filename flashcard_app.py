@@ -1,42 +1,49 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import random
 
-# Load existing words from CSV
-def load_data():
-    try:
-        return pd.read_csv('new_word.csv')
-    except FileNotFoundError:
-        return pd.DataFrame(columns=["Date Added", "Word", "Definition", "Example Sentence"])
 
-# Save new word to CSV
-def save_data(word, definition, example):
-    data = load_data()
-    new_entry = pd.DataFrame({"Date Added": [datetime.now().strftime("%Y-%m-%d")],
-                              "Word": [word],
-                              "Definition": [definition],
-                              "Example Sentence": [example]})
-    updated_data = pd.concat([data, new_entry], ignore_index=True)
-    updated_data.to_csv('vocabulary.csv', index=False)
+# Load flashcards data from the Excel file
+file_path = 'new_word.xlsx'
+flashcards_df = pd.read_excel(file_path)
+flashcards = flashcards_df.to_dict(orient='records')
 
-# Form to add new words
+
+# Function to pick a new random flashcard
+def new_flashcard():
+    if flashcards:  # Ensure flashcards list is not empty
+        st.session_state.current_flashcard = random.choice(flashcards)
+
+
+# Initialize session state to store the flashcard
+if 'current_flashcard' not in st.session_state:
+    new_flashcard()  # Set a flashcard at the start
+
+
+# Streamlit app title
 st.title("Flashcard App")
-st.sidebar.title("Navigation")
-option = st.sidebar.selectbox("Choose a feature", ["Add New Word", "Review Today's Words", "Review All Words"])
-
-if option == "Add New Word":
-    st.header("Add a New Word")
-    
-    # Form for user input
-    with st.form("new_word_form"):
-        word = st.text_input("Word")
-        definition = st.text_input("Definition")
-        example = st.text_input("Example Sentence")
-        submit = st.form_submit_button("Add Word")
-        
-    if submit and word and definition and example:
-        save_data(word, definition, example)
-        st.success(f"'{word}' added to your vocabulary list!")
 
 
+# Get the current flashcard from session state
+if 'current_flashcard' in st.session_state:
+    card = st.session_state.current_flashcard
 
+    # Display the flashcard information
+    st.subheader(f"Word: {card['Word']}")
+    st.text(f"Pronunciation: {card['Pronounce']}")
+    st.text(f"Kind of Word: {card['Kind of word']}")
+
+    # Button to reveal the meaning
+    if st.button("Show Meaning"):
+        st.write(f"**Meaning:** {card['Meaning']}")
+        st.write(f"**Common collocation:** {card['common collocation']}")
+        st.write(f"**Synonym:** {card['Synonym']}")
+        st.write(f"**Example:** {card['Example']}")
+else:
+    st.write("No flashcard available.")
+
+
+# Button to load a new flashcard
+if st.button("Next Flashcard"):
+    new_flashcard()
+    st.rerun()
