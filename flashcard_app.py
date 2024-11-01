@@ -5,7 +5,7 @@ from datetime import datetime
 # Load existing words from CSV
 def load_data():
     try:
-        return pd.read_csv('vocabulary.csv')
+        return pd.read_csv('new_word.csv')
     except FileNotFoundError:
         return pd.DataFrame(columns=["Date Added", "Word", "Definition", "Example Sentence"])
 
