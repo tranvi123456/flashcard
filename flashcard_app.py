@@ -20,7 +20,7 @@ def save_data(word, definition, example):
     updated_data.to_csv('vocabulary.csv', index=False)
 
 # Form to add new words
-st.title("Vocabulary Learning App")
+st.title("Flashcard App")
 st.sidebar.title("Navigation")
 option = st.sidebar.selectbox("Choose a feature", ["Add New Word", "Review Today's Words", "Review All Words"])
 
