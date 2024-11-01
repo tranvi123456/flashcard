@@ -21,7 +21,7 @@ if 'current_flashcard' not in st.session_state:
 
 
 # Streamlit app title
-st.title("Flashcard App")
+st.title("Flashcard")
 
 
 # Get the current flashcard from session state
